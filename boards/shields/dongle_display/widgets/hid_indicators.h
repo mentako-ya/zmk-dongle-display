@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
  
- #pragma once
+#pragma once
 
 #include <lvgl.h>
 #include <zephyr/kernel.h>
 
 struct zmk_widget_hid_indicators {
     sys_snode_t node;
-    lv_obj_t *obj;
+    lv_obj_t *obj; // v9でもラベル等のオブジェクトは lv_obj_t * 型で保持します
 };
 
 int zmk_widget_hid_indicators_init(struct zmk_widget_hid_indicators *widget, lv_obj_t *parent);

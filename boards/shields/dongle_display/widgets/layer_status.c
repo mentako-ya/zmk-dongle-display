@@ -26,15 +26,12 @@ struct layer_status_state {
 static void set_layer_symbol(lv_obj_t *label, struct layer_status_state state) {
     if (state.label == NULL) {
         char text[7] = {};
-
+        // v9でも sprintf / lv_label_set_text の組み合わせは有効
         sprintf(text, "%i", state.index);
-
         lv_label_set_text(label, text);
     } else {
         char text[13] = {};
-
         snprintf(text, sizeof(text), "%s", state.label);
-
         lv_label_set_text(label, text);
     }
 }
@@ -59,10 +56,17 @@ ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 
 int zmk_widget_layer_status_init(struct zmk_widget_layer_status *widget, lv_obj_t *parent) {
     widget->obj = lv_label_create(parent);
+    
+    // スクロール幅の設定
     lv_obj_set_width(widget->obj, CONFIG_ZMK_DONGLE_DISPLAY_LAYER_NAME_SCROLL_WIDTH);
+    
+    // v9: ラベルのロングモード設定
+    // LV_LABEL_LONG_SCROLL_CIRCULAR は引き続き利用可能ですが、
+    // オブジェクトのサイズが内容より小さい場合にのみ機能します。
     lv_label_set_long_mode(widget->obj, LV_LABEL_LONG_SCROLL_CIRCULAR);
 
-    // Set text alignment based on config
+    // v9: テキストアライメントの設定
+    // lv_obj_set_style_text_align を使用し、LV_TEXT_ALIGN_... 定数を用います。
     if (strcmp(CONFIG_ZMK_DONGLE_DISPLAY_LAYER_TEXT_ALIGN, "right") == 0) {
         lv_obj_set_style_text_align(widget->obj, LV_TEXT_ALIGN_RIGHT, 0);
     } else if (strcmp(CONFIG_ZMK_DONGLE_DISPLAY_LAYER_TEXT_ALIGN, "center") == 0) {

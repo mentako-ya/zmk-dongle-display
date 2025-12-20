@@ -30,6 +30,7 @@ static void set_hid_indicators(lv_obj_t *label, struct hid_indicators_state stat
     char text[7] = {};
     bool lock = false;
 
+    // v9でも文字結合(strncat)とラベル設定(lv_label_set_text)の組み合わせは有効です
     if (state.hid_indicators & LED_CLCK) {
         strncat(text, "C", 1);
         lock = true;
@@ -67,10 +68,12 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_hid_indicators, struct hid_indicators_state,
 ZMK_SUBSCRIPTION(widget_hid_indicators, zmk_hid_indicators_changed);
 
 int zmk_widget_hid_indicators_init(struct zmk_widget_hid_indicators *widget, lv_obj_t *parent) {
+    // v9: lv_label_create は引き続き利用可能です
     widget->obj = lv_label_create(parent);
 
     sys_slist_append(&widgets, &widget->node);
 
+    // ZMKのウィジェットリスナー初期化マクロ
     widget_hid_indicators_init();
 
     return 0;

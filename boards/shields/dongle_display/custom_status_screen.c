@@ -42,14 +42,19 @@ lv_style_t global_style;
 lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen;
 
+    // v9: 画面オブジェクトの生成
     screen = lv_obj_create(NULL);
 
     lv_style_init(&global_style);
+    // フォント設定。lv_font_unscii_8 が有効であることを確認してください
     lv_style_set_text_font(&global_style, &lv_font_unscii_8);
     lv_style_set_text_letter_space(&global_style, 1);
     lv_style_set_text_line_space(&global_style, 1);
-    lv_obj_add_style(screen, &global_style, LV_PART_MAIN);
     
+    // v9: 第3引数は LV_STATE_DEFAULT または 0 が一般的
+    lv_obj_add_style(screen, &global_style, LV_PART_MAIN | LV_STATE_DEFAULT);
+    
+    // 各ウィジェットの初期化と配置
     zmk_widget_output_status_init(&output_status_widget, screen);
     lv_obj_align(zmk_widget_output_status_obj(&output_status_widget), LV_ALIGN_TOP_LEFT, 0, 0);
 
@@ -75,6 +80,7 @@ lv_obj_t *zmk_display_status_screen() {
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_LAYER)
     zmk_widget_layer_status_init(&layer_status_widget, screen);
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_BONGO_CAT)
+    // 配置ロジック
     lv_obj_align_to(zmk_widget_layer_status_obj(&layer_status_widget), zmk_widget_bongo_cat_obj(&bongo_cat_widget), LV_ALIGN_BOTTOM_RIGHT, 0, 5);
 #else
     lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_BOTTOM_RIGHT, 0, -3);

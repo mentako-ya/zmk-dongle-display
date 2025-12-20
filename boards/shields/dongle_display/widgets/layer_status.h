@@ -11,7 +11,7 @@
 
 struct zmk_widget_layer_status {
     sys_snode_t node;
-    lv_obj_t *obj;
+    lv_obj_t *obj; // v9でもラベル等のオブジェクトは lv_obj_t * 型で保持します
 };
 
 int zmk_widget_layer_status_init(struct zmk_widget_layer_status *widget, lv_obj_t *parent);

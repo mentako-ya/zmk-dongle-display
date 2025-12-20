@@ -30,12 +30,11 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SPEEDOMET
   0x20, 0x20, 
 };
 
-const lv_img_dsc_t sym_speedometer = {
-  .header.cf = LV_IMG_CF_INDEXED_1BIT,
-  .header.always_zero = 0,
-  .header.reserved = 0,
+const lv_image_dsc_t sym_speedometer = {
+  .header.magic = LV_IMAGE_HEADER_MAGIC, // v9デコーダ用の識別子
+  .header.cf = LV_COLOR_FORMAT_I1,       // インデックスカラー1ビット形式
   .header.w = 14,
   .header.h = 14,
-  .data_size = 36,
+  .data_size = 36,                       // 8(パレット) + 28(データ) = 36
   .data = sym_speedometer_map,
 };

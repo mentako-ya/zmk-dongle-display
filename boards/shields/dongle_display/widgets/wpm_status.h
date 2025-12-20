@@ -12,8 +12,8 @@
 struct zmk_widget_wpm_status
 {
     sys_snode_t node;
-    lv_obj_t *obj;
-    lv_obj_t *wpm_label;
+    lv_obj_t *obj;       // コンテナオブジェクト
+    lv_obj_t *wpm_label; // WPM数値を表示するラベル
 };
 
 int zmk_widget_wpm_status_init(struct zmk_widget_wpm_status *widget, lv_obj_t *parent);

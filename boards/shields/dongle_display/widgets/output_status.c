@@ -23,18 +23,19 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #endif
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
-LV_IMG_DECLARE(sym_usb);
-LV_IMG_DECLARE(sym_bt);
-LV_IMG_DECLARE(sym_ok);
-LV_IMG_DECLARE(sym_nok);
-LV_IMG_DECLARE(sym_open);
-LV_IMG_DECLARE(sym_1);
-LV_IMG_DECLARE(sym_2);
-LV_IMG_DECLARE(sym_3);
-LV_IMG_DECLARE(sym_4);
-LV_IMG_DECLARE(sym_5);
+// v9: LV_IMG_DECLARE -> LV_IMAGE_DECLARE
+LV_IMAGE_DECLARE(sym_usb);
+LV_IMAGE_DECLARE(sym_bt);
+LV_IMAGE_DECLARE(sym_ok);
+LV_IMAGE_DECLARE(sym_nok);
+LV_IMAGE_DECLARE(sym_open);
+LV_IMAGE_DECLARE(sym_1);
+LV_IMAGE_DECLARE(sym_2);
+LV_IMAGE_DECLARE(sym_3);
+LV_IMAGE_DECLARE(sym_4);
+LV_IMAGE_DECLARE(sym_5);
 
-const lv_img_dsc_t *sym_num[] = {
+const lv_image_dsc_t *sym_num[] = {
     &sym_1,
     &sym_2,
     &sym_3,
@@ -56,7 +57,8 @@ enum selection_line_state {
     selection_line_state_bt
 } current_selection_line_state;
 
-lv_point_t selection_line_points[] = { {0, 0}, {13, 0} }; // will be replaced with lv_point_precise_t 
+// v9: 描画精度の向上に伴い、lv_point_t ではなく lv_point_precise_t を推奨
+static lv_point_precise_t selection_line_points[] = { {0, 0}, {13, 0} }; 
 
 struct output_status_state {
     struct zmk_endpoint_instance selected_endpoint;
@@ -90,14 +92,19 @@ static void anim_x_cb(void * var, int32_t v) {
 }
 
 static void anim_size_cb(void * var, int32_t v) {
-    selection_line_points[1].x = v;
+    // v9: selection_line_points[1].x は int32_t 型です。
+    // 特殊な型名を使わず、そのまま代入するか標準的な型でキャストします。
+    selection_line_points[1].x = (int32_t)v;
+    // 線を描画し直すために無効化（再描画）を促す
+    lv_obj_invalidate(var);
 }
 
 static void move_object_x(void *obj, int32_t from, int32_t to) {
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
-    lv_anim_set_time(&a, 200); // will be replaced with lv_anim_set_duration
+    // v9: set_time -> set_duration
+    lv_anim_set_duration(&a, 200); 
     lv_anim_set_exec_cb(&a, anim_x_cb);
     lv_anim_set_path_cb(&a, lv_anim_path_overshoot);
     lv_anim_set_values(&a, from, to);
@@ -108,7 +115,7 @@ static void change_size_object(void *obj, int32_t from, int32_t to) {
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
-    lv_anim_set_time(&a, 200); // will be replaced with lv_anim_set_duration
+    lv_anim_set_duration(&a, 200); // v9: set_duration
     lv_anim_set_exec_cb(&a, anim_size_cb);
     lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
     lv_anim_set_values(&a, from, to);
@@ -141,25 +148,25 @@ static void set_status_symbol(lv_obj_t *widget, struct output_status_state state
     }
 
     if (state.usb_is_hid_ready) {
-        lv_img_set_src(usb_hid_status, &sym_ok);
+        lv_image_set_src(usb_hid_status, &sym_ok);
     } else {
-        lv_img_set_src(usb_hid_status, &sym_nok);
+        lv_image_set_src(usb_hid_status, &sym_nok);
     }
 
-    if (state.active_profile_index < (sizeof(sym_num) / sizeof(lv_img_dsc_t *))) {
-        lv_img_set_src(bt_number, sym_num[state.active_profile_index]);
+    if (state.active_profile_index < (sizeof(sym_num) / sizeof(lv_image_dsc_t *))) {
+        lv_image_set_src(bt_number, sym_num[state.active_profile_index]);
     } else {
-        lv_img_set_src(bt_number, &sym_nok);
+        lv_image_set_src(bt_number, &sym_nok);
     }
     
     if (state.active_profile_bonded) {
         if (state.active_profile_connected) {
-            lv_img_set_src(bt_status, &sym_ok);
+            lv_image_set_src(bt_status, &sym_ok);
         } else {
-            lv_img_set_src(bt_status, &sym_nok);
+            lv_image_set_src(bt_status, &sym_nok);
         }
     } else {
-        lv_img_set_src(bt_status, &sym_open);
+        lv_image_set_src(bt_status, &sym_open);
     }
 }
 
@@ -181,30 +188,31 @@ int zmk_widget_output_status_init(struct zmk_widget_output_status *widget, lv_ob
 
     lv_obj_set_size(widget->obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 
-    lv_obj_t *usb = lv_img_create(widget->obj);
+    // v9: lv_img_create -> lv_image_create
+    lv_obj_t *usb = lv_image_create(widget->obj);
     lv_obj_align(usb, LV_ALIGN_TOP_LEFT, 1, 4);
-    lv_img_set_src(usb, &sym_usb);
+    lv_image_set_src(usb, &sym_usb);
 
-    lv_obj_t *usb_hid_status = lv_img_create(widget->obj);
+    lv_obj_t *usb_hid_status = lv_image_create(widget->obj);
     lv_obj_align_to(usb_hid_status, usb, LV_ALIGN_BOTTOM_LEFT, 2, -7);
 
-    lv_obj_t *bt = lv_img_create(widget->obj);
+    lv_obj_t *bt = lv_image_create(widget->obj);
     lv_obj_align_to(bt, usb, LV_ALIGN_OUT_RIGHT_TOP, 6, 0);
-    lv_img_set_src(bt, &sym_bt);
+    lv_image_set_src(bt, &sym_bt);
 
-    lv_obj_t *bt_number = lv_img_create(widget->obj);
+    lv_obj_t *bt_number = lv_image_create(widget->obj);
     lv_obj_align_to(bt_number, bt, LV_ALIGN_OUT_RIGHT_TOP, 2, 7);
 
-    lv_obj_t *bt_status = lv_img_create(widget->obj);
+    lv_obj_t *bt_status = lv_image_create(widget->obj);
     lv_obj_align_to(bt_status, bt, LV_ALIGN_OUT_RIGHT_TOP, 2, 1);
     
     static lv_style_t style_line;
     lv_style_init(&style_line);
     lv_style_set_line_width(&style_line, 2);
 
-    lv_obj_t *selection_line;
-    selection_line = lv_line_create(widget->obj);
-    lv_line_set_points(selection_line, selection_line_points, 2);
+    lv_obj_t *selection_line = lv_line_create(widget->obj);
+    // v9: 型キャスト (const lv_point_precise_t *)
+    lv_line_set_points(selection_line, (const lv_point_precise_t *)selection_line_points, 2);
     lv_obj_add_style(selection_line, &style_line, 0);
     lv_obj_align_to(selection_line, usb, LV_ALIGN_OUT_TOP_LEFT, 3, -1);
  

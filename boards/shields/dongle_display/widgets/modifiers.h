@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: MIT
  */
  
- #pragma once
+#pragma once
 
 #include <lvgl.h>
 #include <zephyr/kernel.h>
 
-#define SIZE_SYMBOLS 14 // 14 x 14 pixel
+// アイコンのサイズ定義。画像データ(14px)と一致している必要があります。
+#define SIZE_SYMBOLS 14 
 
 struct zmk_widget_modifiers {
     sys_snode_t node;

@@ -11,7 +11,7 @@
 
 struct zmk_widget_dongle_battery_status {
     sys_snode_t node;
-    lv_obj_t *obj;
+    lv_obj_t *obj; // LVGL v9でもベースオブジェクトは lv_obj_t 型です
 };
 
 int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_status *widget, lv_obj_t *parent);

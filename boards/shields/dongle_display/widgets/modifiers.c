@@ -24,59 +24,58 @@ struct modifiers_state {
 
 struct modifier_symbol {    
     uint8_t modifier;
-    const lv_img_dsc_t *symbol_dsc;
+    const lv_image_dsc_t *symbol_dsc; // v9型名
     lv_obj_t *symbol;
     lv_obj_t *selection_line; 
     bool is_active;
 };
 
-LV_IMG_DECLARE(control_icon);
+// LV_IMG_DECLARE -> LV_IMAGE_DECLARE
+LV_IMAGE_DECLARE(control_icon);
 struct modifier_symbol ms_control = {
     .modifier = MOD_LCTL | MOD_RCTL,
     .symbol_dsc = &control_icon,
 };
 
-LV_IMG_DECLARE(shift_icon);
+LV_IMAGE_DECLARE(shift_icon);
 struct modifier_symbol ms_shift = {
     .modifier = MOD_LSFT | MOD_RSFT,
     .symbol_dsc = &shift_icon,
 };
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_MAC_MODIFIERS)
-LV_IMG_DECLARE(opt_icon);
+LV_IMAGE_DECLARE(opt_icon);
 struct modifier_symbol ms_opt = {
     .modifier = MOD_LALT | MOD_RALT,
     .symbol_dsc = &opt_icon,
 };
 
-LV_IMG_DECLARE(cmd_icon);
+LV_IMAGE_DECLARE(cmd_icon);
 struct modifier_symbol ms_cmd = {
     .modifier = MOD_LGUI | MOD_RGUI,
     .symbol_dsc = &cmd_icon,
 };
 
 struct modifier_symbol *modifier_symbols[] = {
-    // this order determines the order of the symbols
     &ms_control,
     &ms_opt,
     &ms_cmd,
     &ms_shift
 };
 #else
-LV_IMG_DECLARE(alt_icon);
+LV_IMAGE_DECLARE(alt_icon);
 struct modifier_symbol ms_alt = {
     .modifier = MOD_LALT | MOD_RALT,
     .symbol_dsc = &alt_icon,
 };
 
-LV_IMG_DECLARE(win_icon);
+LV_IMAGE_DECLARE(win_icon);
 struct modifier_symbol ms_win = {
     .modifier = MOD_LGUI | MOD_RGUI,
     .symbol_dsc = &win_icon,
 };
 
 struct modifier_symbol *modifier_symbols[] = {
-    // this order determines the order of the symbols
     &ms_win,
     &ms_alt,
     &ms_control,
@@ -96,8 +95,10 @@ static void move_object_y(void *obj, int32_t from, int32_t to) {
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
-    lv_anim_set_time(&a, 200); // will be replaced with lv_anim_set_duration
+    // v9: set_time -> set_duration
+    lv_anim_set_duration(&a, 200); 
     lv_anim_set_exec_cb(&a, anim_y_cb);
+    // v9: アニメーションパスの指定方法
     lv_anim_set_path_cb(&a, lv_anim_path_overshoot);
     lv_anim_set_values(&a, from, to);
     lv_anim_start(&a);
@@ -118,7 +119,6 @@ static void set_modifiers(lv_obj_t *widget, struct modifiers_state state) {
         }
     }
 }
-
 void modifiers_update_cb(struct modifiers_state state) {
     struct zmk_widget_modifiers *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) { set_modifiers(widget->obj, state); }
@@ -137,30 +137,32 @@ ZMK_SUBSCRIPTION(widget_modifiers, zmk_keycode_state_changed);
 
 int zmk_widget_modifiers_init(struct zmk_widget_modifiers *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
-
     lv_obj_set_size(widget->obj, NUM_SYMBOLS * (SIZE_SYMBOLS + 1) + 1, SIZE_SYMBOLS + 3);
     
     static lv_style_t style_line;
     lv_style_init(&style_line);
     lv_style_set_line_width(&style_line, 2);
 
-    static const lv_point_t selection_line_points[] = { {0, 0}, {SIZE_SYMBOLS, 0} };
+    static const lv_point_precise_t selection_line_points[] = { {0, 0}, {SIZE_SYMBOLS, 0} };
 
     for (int i = 0; i < NUM_SYMBOLS; i++) {
-        modifier_symbols[i]->symbol = lv_img_create(widget->obj);
+        // 画像オブジェクトの作成とソース設定
+        modifier_symbols[i]->symbol = lv_image_create(widget->obj);
         lv_obj_align(modifier_symbols[i]->symbol, LV_ALIGN_TOP_LEFT, 1 + (SIZE_SYMBOLS + 1) * i, 1);
-        lv_img_set_src(modifier_symbols[i]->symbol, modifier_symbols[i]->symbol_dsc);
+        lv_image_set_src(modifier_symbols[i]->symbol, modifier_symbols[i]->symbol_dsc);
 
+        // ラインオブジェクトの作成
         modifier_symbols[i]->selection_line = lv_line_create(widget->obj);
-        lv_line_set_points(modifier_symbols[i]->selection_line, selection_line_points, 2);
+        
+        // 正しいキャスト: (const lv_point_precise_t *)
+        lv_line_set_points(modifier_symbols[i]->selection_line, (const lv_point_precise_t *)selection_line_points, 2);
+        
         lv_obj_add_style(modifier_symbols[i]->selection_line, &style_line, 0);
         lv_obj_align_to(modifier_symbols[i]->selection_line, modifier_symbols[i]->symbol, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 3);
     }
 
     sys_slist_append(&widgets, &widget->node);
-
     widget_modifiers_init();
-
     return 0;
 }
 
