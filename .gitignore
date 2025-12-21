@@ -1,0 +1,7 @@
+# CodeQL build artifacts
+_codeql_*
+*/_codeql_*
+
+# Build directories
+build/
+.build/
