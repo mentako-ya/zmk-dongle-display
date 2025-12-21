@@ -64,9 +64,27 @@ static void draw_battery(lv_obj_t *canvas, uint8_t level, bool usb_present) {
         rect_fill_dsc.border_width = 1;
     }
 
-    // v9: set_px -> set_pixel
-    lv_canvas_set_pixel(canvas, 0, 0, lv_color_white());
-    lv_canvas_set_pixel(canvas, 4, 0, lv_color_white());
+    // v9: Draw small rectangles instead of set_pixel (which doesn't exist in v9)
+    lv_draw_rect_dsc_t pixel_dsc;
+    lv_draw_rect_dsc_init(&pixel_dsc);
+    pixel_dsc.bg_color = lv_color_white();
+    pixel_dsc.bg_opa = LV_OPA_COVER;
+    
+    // Draw pixel at (0, 0)
+    lv_area_t pixel_area1;
+    pixel_area1.x1 = 0;
+    pixel_area1.y1 = 0;
+    pixel_area1.x2 = 0;
+    pixel_area1.y2 = 0;
+    lv_draw_rect(&layer, &pixel_dsc, &pixel_area1);
+    
+    // Draw pixel at (4, 0)
+    lv_area_t pixel_area2;
+    pixel_area2.x1 = 4;
+    pixel_area2.y1 = 0;
+    pixel_area2.x2 = 4;
+    pixel_area2.y2 = 0;
+    lv_draw_rect(&layer, &pixel_dsc, &pixel_area2);
 
     int h = 0;
     if (level <= 10 || usb_present) h = 5;
@@ -101,9 +119,9 @@ static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
     
     if (state.level > 0 || state.usb_present) {
         lv_obj_remove_flag(symbol, LV_OBJ_FLAG_HIDDEN); // v9では clear_flag も使えますが remove_flag が一般的
-        lv_obj_move_to_front(symbol); // v9: move_foreground -> move_to_front
+        lv_obj_move_foreground(symbol); // v9: correct function is move_foreground
         lv_obj_remove_flag(label, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_move_to_front(label);
+        lv_obj_move_foreground(label);
     } else {
         lv_obj_add_flag(symbol, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
