@@ -125,8 +125,13 @@ void battery_status_update_cb(struct battery_state state) {
 
 static struct battery_state peripheral_battery_status_get_state(const zmk_event_t *eh) {
     const struct zmk_peripheral_battery_state_changed *ev = as_zmk_peripheral_battery_state_changed(eh);
+    uint8_t src_idx = ev->source;
+    // ESB peripheral IDs are 1-based (L=1, R=2, FOOT=3), convert to 0-based slot if needed
+    if (src_idx > 0 && !IS_ENABLED(CONFIG_ZMK_SPLIT_BLE)) {
+        src_idx = src_idx - 1;
+    }
     return (struct battery_state){
-        .source = ev->source + SOURCE_OFFSET,
+        .source = src_idx + SOURCE_OFFSET,
         .level = ev->state_of_charge,
     };
 }
