@@ -192,6 +192,11 @@ int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_statu
 
     widget_dongle_battery_status_init();
 
+#if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY)
+    struct battery_state initial_central = central_battery_status_get_state(NULL);
+    set_battery_symbol(widget->obj, initial_central);
+#endif
+
     return 0;
 }
 
