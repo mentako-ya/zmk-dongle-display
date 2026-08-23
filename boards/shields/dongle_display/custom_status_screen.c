@@ -12,6 +12,7 @@
 #include "widgets/output_status.h"
 #include "widgets/hid_indicators.h"
 #include "widgets/wpm_status.h"
+#include "widgets/trackball_status.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -40,6 +41,7 @@ static struct zmk_widget_bongo_cat bongo_cat_widget;
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_WPM)
 static struct zmk_widget_wpm_status wpm_status_widget;
+static struct zmk_widget_trackball_status trackball_status_widget;
 #endif
 
 lv_style_t global_style;
@@ -60,6 +62,9 @@ lv_obj_t *zmk_display_status_screen() {
     
     zmk_widget_output_status_init(&output_status_widget, screen);
     lv_obj_align(zmk_widget_output_status_obj(&output_status_widget), LV_ALIGN_TOP_LEFT, 0, 0);
+    zmk_widget_trackball_status_init(&trackball_status_widget, screen);
+    lv_obj_align(zmk_widget_trackball_status_obj(&trackball_status_widget), LV_ALIGN_TOP_LEFT, 0, 20);
+
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_WPM)
     zmk_widget_wpm_status_init(&wpm_status_widget, screen);
