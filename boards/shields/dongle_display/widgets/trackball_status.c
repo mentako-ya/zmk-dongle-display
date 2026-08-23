@@ -98,7 +98,7 @@ ZMK_SUBSCRIPTION(widget_trackball_status, zmk_activity_state_changed);
 // Periodic UI refresh timer (100ms) for smooth XY accumulation updates
 static void trackball_ui_timer_cb(lv_timer_t *timer) {
     struct trackball_state state = {
-        .cpi = g_cpi,
+        .cpi = zmk_paw32xx_cpi_get_current(),
         .accum_x = g_accum_x,
         .accum_y = g_accum_y,
     };
