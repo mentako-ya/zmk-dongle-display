@@ -184,8 +184,10 @@ int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_statu
         lv_obj_align(image_canvas, LV_ALIGN_TOP_RIGHT, 0, i * 10);
         lv_obj_align_to(battery_label, image_canvas, LV_ALIGN_OUT_LEFT_MID, 0, 0);
 
-        lv_obj_add_flag(image_canvas, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(battery_label, LV_OBJ_FLAG_HIDDEN);
+        draw_battery(image_canvas, 100, false);
+        lv_label_set_text(battery_label, " --% ");
+        lv_obj_clear_flag(image_canvas, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(battery_label, LV_OBJ_FLAG_HIDDEN);
         
         battery_objects[i] = (struct battery_object){
             .symbol = image_canvas,
