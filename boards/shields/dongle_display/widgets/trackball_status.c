@@ -126,7 +126,7 @@ int zmk_widget_trackball_status_init(struct zmk_widget_trackball_status *widget,
 
     widget_trackball_status_init();
 
-    lv_timer_create(trackball_ui_timer_cb, 80, NULL);
+    lv_timer_create(trackball_ui_timer_cb, 200, NULL);
 
     return 0;
 }
