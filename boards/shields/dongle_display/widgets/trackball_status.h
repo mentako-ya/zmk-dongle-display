@@ -12,7 +12,8 @@ struct zmk_widget_trackball_status {
     sys_snode_t node;
     lv_obj_t *obj;
     lv_obj_t *cpi_label;
-    lv_obj_t *xy_label;
+    lv_obj_t *x_label;
+    lv_obj_t *y_label;
 };
 
 int zmk_widget_trackball_status_init(struct zmk_widget_trackball_status *widget, lv_obj_t *parent);

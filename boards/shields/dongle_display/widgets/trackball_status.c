@@ -49,11 +49,12 @@ static void input_trackball_listener_cb(struct input_event *evt, void *user_data
 INPUT_CALLBACK_DEFINE(NULL, input_trackball_listener_cb, NULL);
 
 static void set_trackball_labels(struct zmk_widget_trackball_status *widget, struct trackball_state state) {
-    if (!widget || !widget->cpi_label || !widget->xy_label) {
+    if (!widget || !widget->cpi_label || !widget->x_label || !widget->y_label) {
         return;
     }
     lv_label_set_text_fmt(widget->cpi_label, "CPI:%u", state.cpi);
-    lv_label_set_text_fmt(widget->xy_label, "X:%+4d Y:%+4d", state.accum_x, state.accum_y);
+    lv_label_set_text_fmt(widget->x_label, "X:%+4d", state.accum_x);
+    lv_label_set_text_fmt(widget->y_label, "Y:%+4d", state.accum_y);
 }
 
 static void trackball_status_update_cb(struct trackball_state state) {
@@ -95,7 +96,7 @@ ZMK_SUBSCRIPTION(widget_trackball_status, zmk_paw32xx_cpi_changed);
 ZMK_SUBSCRIPTION(widget_trackball_status, zmk_split_peripheral_status_changed);
 ZMK_SUBSCRIPTION(widget_trackball_status, zmk_activity_state_changed);
 
-// Periodic UI refresh timer (100ms) for smooth XY accumulation updates
+// Periodic UI refresh timer (80ms) for smooth XY accumulation updates
 static void trackball_ui_timer_cb(lv_timer_t *timer) {
     struct trackball_state state = {
         .cpi = zmk_paw32xx_cpi_get_current(),
@@ -113,9 +114,13 @@ int zmk_widget_trackball_status_init(struct zmk_widget_trackball_status *widget,
     lv_label_set_text_fmt(widget->cpi_label, "CPI:%u", zmk_paw32xx_cpi_get_current());
     lv_obj_align(widget->cpi_label, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    widget->xy_label = lv_label_create(widget->obj);
-    lv_label_set_text(widget->xy_label, "X:  +0 Y:  +0");
-    lv_obj_align_to(widget->xy_label, widget->cpi_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 1);
+    widget->x_label = lv_label_create(widget->obj);
+    lv_label_set_text(widget->x_label, "X:  +0");
+    lv_obj_align_to(widget->x_label, widget->cpi_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 1);
+
+    widget->y_label = lv_label_create(widget->obj);
+    lv_label_set_text(widget->y_label, "Y:  +0");
+    lv_obj_align_to(widget->y_label, widget->x_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 1);
 
     sys_slist_append(&widgets, &widget->node);
 
