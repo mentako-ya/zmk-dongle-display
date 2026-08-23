@@ -30,7 +30,7 @@ static void set_trackball_labels(struct zmk_widget_trackball_status *widget, str
     // Dynamic XY display from current HID mouse state
     struct zmk_hid_mouse_report *report = zmk_hid_get_mouse_report();
     if (report) {
-        lv_label_set_text_fmt(widget->xy_label, "X:%+3d Y:%+3d", report->x, report->y);
+        lv_label_set_text_fmt(widget->xy_label, "X:%+3d Y:%+3d", report->body.d_x, report->body.d_y);
     }
 }
 
