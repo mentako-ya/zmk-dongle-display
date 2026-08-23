@@ -98,7 +98,7 @@ static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
     if (state.source >= DONGLE_DISPLAY_PERIPHERAL_COUNT + SOURCE_OFFSET) {
         return;
     }
-    LOG_DBG("source: %d, level: %d, usb: %d", state.source, state.level, state.usb_present);
+    LOG_INF("[BATTERY_WIDGET] set_battery_symbol called: slot=%d, level=%d, usb=%d", state.source, state.level, state.usb_present);
     lv_obj_t *symbol = battery_objects[state.source].symbol;
     lv_obj_t *label = battery_objects[state.source].label;
 
@@ -131,6 +131,7 @@ static struct battery_state peripheral_battery_status_get_state(const zmk_event_
     if (src_idx > 0 && !IS_ENABLED(CONFIG_ZMK_SPLIT_BLE)) {
         src_idx = src_idx - 1;
     }
+    LOG_INF("[BATTERY_WIDGET] Received periph event: raw_source=%d -> slot=%d, soc=%d%%", ev->source, src_idx + SOURCE_OFFSET, ev->state_of_charge);
     return (struct battery_state){
         .source = src_idx + SOURCE_OFFSET,
         .level = ev->state_of_charge,
