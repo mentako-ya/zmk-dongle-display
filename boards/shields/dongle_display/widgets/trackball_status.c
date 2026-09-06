@@ -16,7 +16,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/split_peripheral_status_changed.h>
 
 #include "trackball_status.h"
-#include "/Users/tools/git/zmk-config-mtk64/config/boards/shields/mtk64/paw32xx_cpi_changed.h"
+#include "paw32xx_cpi_changed.h"
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
