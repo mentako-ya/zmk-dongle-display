@@ -24,7 +24,7 @@ struct aml_scr_status_state {
 static bool g_aml_enabled = true;
 static bool g_scr_inverted = false;
 
-static const lv_point_precise_t line_points[] = { {0, 0}, {18, 0} };
+static const lv_point_precise_t line_points[] = { {0, 0}, {7, 0} };
 
 static void set_aml_scr_state(struct zmk_widget_aml_scr_status *widget, struct aml_scr_status_state state) {
     if (!widget) {
@@ -80,31 +80,31 @@ ZMK_SUBSCRIPTION(widget_aml_scr_status, zmk_scroll_inverted_changed);
 
 int zmk_widget_aml_scr_status_init(struct zmk_widget_aml_scr_status *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
-    lv_obj_set_size(widget->obj, 20, 19);
+    lv_obj_set_size(widget->obj, 19, 12);
 
     static lv_style_t line_style;
     lv_style_init(&line_style);
     lv_style_set_line_width(&line_style, 2);
 
-    // --- 1段目: AML ---
+    // --- 左側: A (Auto Mouse Layer) ---
     widget->aml_line = lv_line_create(widget->obj);
     lv_line_set_points(widget->aml_line, line_points, 2);
     lv_obj_add_style(widget->aml_line, &line_style, 0);
-    lv_obj_align(widget->aml_line, LV_ALIGN_TOP_LEFT, 1, 0);
+    lv_obj_align(widget->aml_line, LV_ALIGN_TOP_LEFT, 0, 0);
 
     widget->aml_label = lv_label_create(widget->obj);
-    lv_label_set_text(widget->aml_label, "AML");
-    lv_obj_align(widget->aml_label, LV_ALIGN_TOP_LEFT, 1, 2);
+    lv_label_set_text(widget->aml_label, "A");
+    lv_obj_align(widget->aml_label, LV_ALIGN_TOP_LEFT, 0, 2);
 
-    // --- 2段目: SCR ---
+    // --- 右側: S (Scroll Inverter) ---
     widget->scr_line = lv_line_create(widget->obj);
     lv_line_set_points(widget->scr_line, line_points, 2);
     lv_obj_add_style(widget->scr_line, &line_style, 0);
-    lv_obj_align(widget->scr_line, LV_ALIGN_TOP_LEFT, 1, 10);
+    lv_obj_align(widget->scr_line, LV_ALIGN_TOP_LEFT, 10, 0);
 
     widget->scr_label = lv_label_create(widget->obj);
-    lv_label_set_text(widget->scr_label, "SCR");
-    lv_obj_align(widget->scr_label, LV_ALIGN_TOP_LEFT, 1, 12);
+    lv_label_set_text(widget->scr_label, "S");
+    lv_obj_align(widget->scr_label, LV_ALIGN_TOP_LEFT, 10, 2);
 
     // 初期状態の取得
     g_aml_enabled = zmk_aml_is_enabled();
