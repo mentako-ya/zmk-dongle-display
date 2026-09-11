@@ -13,11 +13,13 @@
 #include "widgets/hid_indicators.h"
 #include "widgets/wpm_status.h"
 #include "widgets/trackball_status.h"
+#include "widgets/aml_scr_status.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 static struct zmk_widget_output_status output_status_widget;
+static struct zmk_widget_aml_scr_status aml_scr_status_widget;
 
 #if IS_ENABLED(CONFIG_ZMK_BATTERY) || IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
 static struct zmk_widget_dongle_battery_status dongle_battery_status_widget;
@@ -97,6 +99,12 @@ lv_obj_t *zmk_display_status_screen() {
 #if IS_ENABLED(CONFIG_ZMK_BATTERY) || IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
     zmk_widget_dongle_battery_status_init(&dongle_battery_status_widget, screen);
     lv_obj_align(zmk_widget_dongle_battery_status_obj(&dongle_battery_status_widget), LV_ALIGN_TOP_RIGHT, 0, 0);
+
+    zmk_widget_aml_scr_status_init(&aml_scr_status_widget, screen);
+    lv_obj_align_to(zmk_widget_aml_scr_status_obj(&aml_scr_status_widget), zmk_widget_dongle_battery_status_obj(&dongle_battery_status_widget), LV_ALIGN_OUT_LEFT_TOP, -6, 0);
+#else
+    zmk_widget_aml_scr_status_init(&aml_scr_status_widget, screen);
+    lv_obj_align(zmk_widget_aml_scr_status_obj(&aml_scr_status_widget), LV_ALIGN_TOP_RIGHT, -4, 0);
 #endif
 
     return screen;
