@@ -75,7 +75,7 @@ lv_obj_t *zmk_display_status_screen() {
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_BONGO_CAT)
     zmk_widget_bongo_cat_init(&bongo_cat_widget, screen);
-    lv_obj_align(zmk_widget_bongo_cat_obj(&bongo_cat_widget), LV_ALIGN_BOTTOM_RIGHT, 0, -7);
+    lv_obj_align(zmk_widget_bongo_cat_obj(&bongo_cat_widget), LV_ALIGN_BOTTOM_RIGHT, 0, -14);
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_MODIFIERS)
@@ -85,26 +85,21 @@ lv_obj_t *zmk_display_status_screen() {
     zmk_widget_hid_indicators_init(&hid_indicators_widget, screen);
     lv_obj_align_to(zmk_widget_hid_indicators_obj(&hid_indicators_widget), zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_OUT_TOP_LEFT, 0, -2);
 #endif
+    zmk_widget_aml_scr_status_init(&aml_scr_status_widget, screen);
+    lv_obj_align_to(zmk_widget_aml_scr_status_obj(&aml_scr_status_widget), zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_OUT_RIGHT_BOTTOM, 2, 0);
+#else
+    zmk_widget_aml_scr_status_init(&aml_scr_status_widget, screen);
+    lv_obj_align(zmk_widget_aml_scr_status_obj(&aml_scr_status_widget), LV_ALIGN_BOTTOM_LEFT, 0, 0);
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_LAYER)
     zmk_widget_layer_status_init(&layer_status_widget, screen);
-#if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_BONGO_CAT)
-    lv_obj_align_to(zmk_widget_layer_status_obj(&layer_status_widget), zmk_widget_bongo_cat_obj(&bongo_cat_widget), LV_ALIGN_BOTTOM_RIGHT, 0, 5);
-#else
-    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_BOTTOM_RIGHT, 0, -3);
-#endif
+    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_BATTERY) || IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
     zmk_widget_dongle_battery_status_init(&dongle_battery_status_widget, screen);
     lv_obj_align(zmk_widget_dongle_battery_status_obj(&dongle_battery_status_widget), LV_ALIGN_TOP_RIGHT, 0, 0);
-
-    zmk_widget_aml_scr_status_init(&aml_scr_status_widget, screen);
-    lv_obj_align_to(zmk_widget_aml_scr_status_obj(&aml_scr_status_widget), zmk_widget_dongle_battery_status_obj(&dongle_battery_status_widget), LV_ALIGN_OUT_LEFT_TOP, -6, 0);
-#else
-    zmk_widget_aml_scr_status_init(&aml_scr_status_widget, screen);
-    lv_obj_align(zmk_widget_aml_scr_status_obj(&aml_scr_status_widget), LV_ALIGN_TOP_RIGHT, -4, 0);
 #endif
 
     return screen;

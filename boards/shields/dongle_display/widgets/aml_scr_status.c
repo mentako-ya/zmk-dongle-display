@@ -14,6 +14,30 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "aml_state_changed.h"
 #include "scroll_inverted_changed.h"
 
+struct aml_scr_symbol {
+    const lv_img_dsc_t *symbol_dsc;
+    lv_obj_t *symbol;
+    lv_obj_t *selection_line;
+    bool is_active;
+};
+
+LV_IMG_DECLARE(aml_icon);
+static struct aml_scr_symbol sym_aml = {
+    .symbol_dsc = &aml_icon,
+};
+
+LV_IMG_DECLARE(scroll_inv_icon);
+static struct aml_scr_symbol sym_scr = {
+    .symbol_dsc = &scroll_inv_icon,
+};
+
+static struct aml_scr_symbol *status_symbols[] = {
+    &sym_aml,
+    &sym_scr,
+};
+
+#define NUM_SYMBOLS (sizeof(status_symbols) / sizeof(struct aml_scr_symbol *))
+
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
 struct aml_scr_status_state {
@@ -24,28 +48,39 @@ struct aml_scr_status_state {
 static bool g_aml_enabled = true;
 static bool g_scr_inverted = false;
 
-static const lv_point_precise_t line_points[] = { {0, 0}, {7, 0} };
+static void anim_y_cb(void *var, int32_t v) {
+    lv_obj_set_y(var, v);
+}
 
-static void set_aml_scr_state(struct zmk_widget_aml_scr_status *widget, struct aml_scr_status_state state) {
-    if (!widget) {
+static void move_object_y(void *obj, int32_t from, int32_t to) {
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, obj);
+    lv_anim_set_duration(&a, 200);
+    lv_anim_set_exec_cb(&a, anim_y_cb);
+    lv_anim_set_path_cb(&a, lv_anim_path_overshoot);
+    lv_anim_set_values(&a, from, to);
+    lv_anim_start(&a);
+}
+
+static void set_symbol_active(struct aml_scr_symbol *sym, bool active) {
+    if (!sym || !sym->symbol || !sym->selection_line) {
         return;
     }
-
-    if (widget->aml_line) {
-        if (state.aml_enabled) {
-            lv_obj_clear_flag(widget->aml_line, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_add_flag(widget->aml_line, LV_OBJ_FLAG_HIDDEN);
-        }
+    if (active && !sym->is_active) {
+        move_object_y(sym->symbol, 1, 0);
+        move_object_y(sym->selection_line, SIZE_AML_SCR_SYMBOLS + 4, SIZE_AML_SCR_SYMBOLS + 2);
+        sym->is_active = true;
+    } else if (!active && sym->is_active) {
+        move_object_y(sym->symbol, 0, 1);
+        move_object_y(sym->selection_line, SIZE_AML_SCR_SYMBOLS + 2, SIZE_AML_SCR_SYMBOLS + 4);
+        sym->is_active = false;
     }
+}
 
-    if (widget->scr_line) {
-        if (state.scr_inverted) {
-            lv_obj_clear_flag(widget->scr_line, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_add_flag(widget->scr_line, LV_OBJ_FLAG_HIDDEN);
-        }
-    }
+static void set_aml_scr_state(struct zmk_widget_aml_scr_status *widget, struct aml_scr_status_state state) {
+    set_symbol_active(&sym_aml, state.aml_enabled);
+    set_symbol_active(&sym_scr, state.scr_inverted);
 }
 
 static void aml_scr_status_update_cb(struct aml_scr_status_state state) {
@@ -80,41 +115,41 @@ ZMK_SUBSCRIPTION(widget_aml_scr_status, zmk_scroll_inverted_changed);
 
 int zmk_widget_aml_scr_status_init(struct zmk_widget_aml_scr_status *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
-    lv_obj_set_size(widget->obj, 19, 12);
+    lv_obj_set_size(widget->obj, NUM_SYMBOLS * (SIZE_AML_SCR_SYMBOLS + 1) + 1, SIZE_AML_SCR_SYMBOLS + 3);
 
-    static lv_style_t line_style;
-    lv_style_init(&line_style);
-    lv_style_set_line_width(&line_style, 2);
+    static lv_style_t style_line;
+    lv_style_init(&style_line);
+    lv_style_set_line_width(&style_line, 2);
 
-    // --- 左側: A (Auto Mouse Layer) ---
-    widget->aml_line = lv_line_create(widget->obj);
-    lv_line_set_points(widget->aml_line, line_points, 2);
-    lv_obj_add_style(widget->aml_line, &line_style, 0);
-    lv_obj_align(widget->aml_line, LV_ALIGN_TOP_LEFT, 0, 0);
+    static const lv_point_precise_t selection_line_points[] = { {0, 0}, {SIZE_AML_SCR_SYMBOLS, 0} };
 
-    widget->aml_label = lv_label_create(widget->obj);
-    lv_label_set_text(widget->aml_label, "A");
-    lv_obj_align(widget->aml_label, LV_ALIGN_TOP_LEFT, 0, 2);
+    for (int i = 0; i < NUM_SYMBOLS; i++) {
+        status_symbols[i]->symbol = lv_img_create(widget->obj);
+        lv_obj_align(status_symbols[i]->symbol, LV_ALIGN_TOP_LEFT, 1 + (SIZE_AML_SCR_SYMBOLS + 1) * i, 1);
+        lv_img_set_src(status_symbols[i]->symbol, status_symbols[i]->symbol_dsc);
 
-    // --- 右側: S (Scroll Inverter) ---
-    widget->scr_line = lv_line_create(widget->obj);
-    lv_line_set_points(widget->scr_line, line_points, 2);
-    lv_obj_add_style(widget->scr_line, &line_style, 0);
-    lv_obj_align(widget->scr_line, LV_ALIGN_TOP_LEFT, 10, 0);
-
-    widget->scr_label = lv_label_create(widget->obj);
-    lv_label_set_text(widget->scr_label, "S");
-    lv_obj_align(widget->scr_label, LV_ALIGN_TOP_LEFT, 10, 2);
+        status_symbols[i]->selection_line = lv_line_create(widget->obj);
+        lv_line_set_points(status_symbols[i]->selection_line, selection_line_points, 2);
+        lv_obj_add_style(status_symbols[i]->selection_line, &style_line, 0);
+        lv_obj_align_to(status_symbols[i]->selection_line, status_symbols[i]->symbol, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 3);
+        status_symbols[i]->is_active = false;
+    }
 
     // 初期状態の取得
     g_aml_enabled = zmk_aml_is_enabled();
     g_scr_inverted = zmk_scroll_inverter_is_inverted();
 
-    struct aml_scr_status_state init_state = {
-        .aml_enabled = g_aml_enabled,
-        .scr_inverted = g_scr_inverted,
-    };
-    set_aml_scr_state(widget, init_state);
+    // 初期位置の設定（アニメーションなしで初期状態を反映）
+    if (g_aml_enabled) {
+        lv_obj_set_y(sym_aml.symbol, 0);
+        lv_obj_set_y(sym_aml.selection_line, SIZE_AML_SCR_SYMBOLS + 2);
+        sym_aml.is_active = true;
+    }
+    if (g_scr_inverted) {
+        lv_obj_set_y(sym_scr.symbol, 0);
+        lv_obj_set_y(sym_scr.selection_line, SIZE_AML_SCR_SYMBOLS + 2);
+        sym_scr.is_active = true;
+    }
 
     sys_slist_append(&widgets, &widget->node);
 
