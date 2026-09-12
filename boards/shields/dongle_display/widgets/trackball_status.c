@@ -32,13 +32,14 @@ static int32_t g_accum_y = 0;
 
 static void input_trackball_listener_cb(struct input_event *evt, void *user_data) {
     if (evt->type == INPUT_EV_REL) {
+        int16_t delta = (int16_t)evt->value;
         if (evt->code == INPUT_REL_X) {
-            g_accum_x += evt->value;
+            g_accum_x += delta;
             if (g_accum_x > 999 || g_accum_x < -999) {
                 g_accum_x = 0;
             }
         } else if (evt->code == INPUT_REL_Y) {
-            g_accum_y += evt->value;
+            g_accum_y += delta;
             if (g_accum_y > 999 || g_accum_y < -999) {
                 g_accum_y = 0;
             }
