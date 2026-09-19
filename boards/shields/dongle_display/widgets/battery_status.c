@@ -98,12 +98,14 @@ static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
     if (state.source >= DONGLE_DISPLAY_PERIPHERAL_COUNT + SOURCE_OFFSET) {
         return;
     }
-    LOG_INF("[BATTERY_WIDGET] set_battery_symbol called: slot=%d, level=%d, usb=%d", state.source, state.level, state.usb_present);
     lv_obj_t *symbol = battery_objects[state.source].symbol;
     lv_obj_t *label = battery_objects[state.source].label;
 
+    static const char slot_prefix[] = {'R', 'L', 'F'};
+    char prefix = (state.source < 3) ? slot_prefix[state.source] : '?';
+
     draw_battery(symbol, state.level, state.usb_present);
-    lv_label_set_text_fmt(label, "%4u%% ", state.level);
+    lv_label_set_text_fmt(label, "%c%3u ", prefix, state.level);
     
     if (state.level > 0 || state.usb_present) {
         lv_obj_clear_flag(symbol, LV_OBJ_FLAG_HIDDEN);
@@ -126,12 +128,21 @@ static struct battery_state peripheral_battery_status_get_state(const zmk_event_
     if (!ev) {
         return (struct battery_state){.source = 255, .level = 0, .usb_present = false};
     }
-    uint8_t src_idx = ev->source;
-    // ESB peripheral IDs are 1-based (L=1, R=2, FOOT=3), normalize to 0-based display index
-    if (src_idx > 0 && !IS_ENABLED(CONFIG_ZMK_SPLIT_BLE)) {
-        src_idx = src_idx - 1;
+    uint8_t src_idx;
+    switch (ev->source) {
+    case 2: // Right
+        src_idx = 0;
+        break;
+    case 1: // Left
+        src_idx = 1;
+        break;
+    case 3: // Foot
+        src_idx = 2;
+        break;
+    default:
+        src_idx = (ev->source > 0) ? (ev->source - 1) : ev->source;
+        break;
     }
-    LOG_INF("[BATTERY_WIDGET] Received periph event: raw_source=%d -> slot=%d, soc=%d%%", ev->source, src_idx + SOURCE_OFFSET, ev->state_of_charge);
     return (struct battery_state){
         .source = src_idx + SOURCE_OFFSET,
         .level = ev->state_of_charge,
@@ -189,7 +200,7 @@ int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_statu
 
         lv_canvas_set_buffer(image_canvas, battery_image_buffer[i], 5, 8, LV_COLOR_FORMAT_L8);
 
-        lv_obj_align(image_canvas, LV_ALIGN_TOP_RIGHT, 0, i * 10);
+        lv_obj_align(image_canvas, LV_ALIGN_TOP_RIGHT, 0, i * 8);
         lv_obj_align_to(battery_label, image_canvas, LV_ALIGN_OUT_LEFT_MID, 0, 0);
 
         lv_obj_add_flag(image_canvas, LV_OBJ_FLAG_HIDDEN);
